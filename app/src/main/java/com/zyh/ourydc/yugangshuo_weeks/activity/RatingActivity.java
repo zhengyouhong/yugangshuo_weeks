@@ -11,12 +11,17 @@ import android.view.View;
 import com.google.gson.Gson;
 import com.zyh.ourydc.yugangshuo_weeks.R;
 import com.zyh.ourydc.yugangshuo_weeks.bean.RatingBean;
+import com.zyh.ourydc.yugangshuo_weeks.bean.RatingItemBean;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by zheng on 2018/3/25.
@@ -29,8 +34,12 @@ public class RatingActivity extends AppCompatActivity {
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
+            if(mRatingBean != null){
+
+            }
         }
     };
+    private RatingBean mRatingBean;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,7 +91,10 @@ public class RatingActivity extends AppCompatActivity {
                             baos.flush();
                         }
                         String json = baos.toString("utf-8");
-                        RatingBean ratingBean = new Gson().fromJson(json, RatingBean.class);
+                        mRatingBean = new Gson().fromJson(json, RatingBean.class);
+                        List<RatingItemBean> list =  setupData(mRatingBean);
+
+
                         runOnUiThread(mRunnable);
                     }
                 } catch (IOException e) {
@@ -93,6 +105,34 @@ public class RatingActivity extends AppCompatActivity {
 
     }
 
+    private List<RatingItemBean> setupData(RatingBean ratingBean) {
+        List<RatingItemBean> list = new ArrayList<>();
+        Field[] fields = ratingBean.getClass().getFields();
+        for (Field field : fields) {
+            RatingItemBean itemBean = new RatingItemBean();
+            if (field.getType().toString().equals("double")) {
+                String name = field.getName().toString();
+                itemBean.money = name;
+                itemBean.value = getFieldValueByName(name, itemBean);
+                list.add(itemBean);
+            }
+        }
+
+        return list;
+    }
+
+
+    private double getFieldValueByName(String fieldName, Object o) {
+        try {
+            String firstLetter = fieldName.substring(0, 1).toUpperCase();
+            String getter = "get" + firstLetter + fieldName.substring(1);
+            Method method = o.getClass().getMethod(getter, new Class[] {});
+            double value = (double) method.invoke(o, new Object[] {});
+            return value;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 
 
 }

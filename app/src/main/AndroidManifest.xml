@@ -24,6 +24,7 @@
 
         <activity android:name=".activity.ConstrainLayoutActivity"/>
         <activity android:name=".activity.ServiceActivity"/>
+        <activity android:name=".activity.CanvasActivity"/>
     </application>
 
 </manifest>
